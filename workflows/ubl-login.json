@@ -1,0 +1,132 @@
+{
+  "name": "UB Learns login (gated, one attempt per expiry episode)",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "l0",
+      "name": "Run now (manual)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "l1",
+      "name": "Every 4 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd \"/path/to/low-code-rpa-automation\" && .venv/bin/python scripts/ubl_login.py"
+      },
+      "id": "l2",
+      "name": "Run login flow",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        260,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "stdout",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "l3",
+      "name": "Result to file",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/path/to/low-code-rpa-automation/data/login-result-latest.json",
+        "dataPropertyName": "data",
+        "options": {}
+      },
+      "id": "l4",
+      "name": "Save result",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        780,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Run now (manual)": {
+      "main": [
+        [
+          {
+            "node": "Run login flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 4 hours": {
+      "main": [
+        [
+          {
+            "node": "Run login flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run login flow": {
+      "main": [
+        [
+          {
+            "node": "Result to file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result to file": {
+      "main": [
+        [
+          {
+            "node": "Save result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

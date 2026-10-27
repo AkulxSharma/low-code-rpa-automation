@@ -1,0 +1,23 @@
+# Never commit secrets, sessions or real data
+.env
+.env.*
+*.pem
+*.key
+cookies*
+*session*
+state/
+logs/
+digests/
+data/
+private/
+*.log
+__pycache__/
+node_modules/
+.n8n/
+# raw statistics from the live sweep stay out of the repo
+*.jsonl
+*.ndjson
+stats/
+.venv/
+.browser-profile/
+outline/

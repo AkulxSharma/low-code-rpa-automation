@@ -1,0 +1,223 @@
+{
+  "name": "Measured report from live sweep stats",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "a1",
+      "name": "Every 4 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd \"/path/to/low-code-rpa-automation\" && python3 -m reader.report \"/path/to/sweep-stats.csv\""
+      },
+      "id": "a2",
+      "name": "Run stats reader",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        260,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.exitCode }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "a3",
+      "name": "Reader succeeded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/path/to/low-code-rpa-automation/data/measured-latest.md",
+        "dataPropertyName": "data",
+        "options": {}
+      },
+      "id": "a4",
+      "name": "Save report",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/path/to/low-code-rpa-automation/data/alert-latest.txt",
+        "dataPropertyName": "data",
+        "options": {}
+      },
+      "id": "a5",
+      "name": "Save alert",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "stdout",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "b1",
+      "name": "Report to file",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "stderr",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "b2",
+      "name": "Alert to file",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        100
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a0",
+      "name": "Run now (manual)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -160
+      ]
+    }
+  ],
+  "connections": {
+    "Every 4 hours": {
+      "main": [
+        [
+          {
+            "node": "Run stats reader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run stats reader": {
+      "main": [
+        [
+          {
+            "node": "Reader succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reader succeeded?": {
+      "main": [
+        [
+          {
+            "node": "Report to file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert to file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report to file": {
+      "main": [
+        [
+          {
+            "node": "Save report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert to file": {
+      "main": [
+        [
+          {
+            "node": "Save alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run now (manual)": {
+      "main": [
+        [
+          {
+            "node": "Run stats reader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "GXVmbSoV9WWlXJfj"
+}
