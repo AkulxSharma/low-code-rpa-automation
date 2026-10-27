@@ -34,7 +34,7 @@ logged in --> reader/portal_counts.py        course, to-do and inbox counts as S
 - `workflows/`: exported n8n workflows without credentials. Replace `/path/to/` with your own paths after import.
 - `scripts/`: gated entry points (`ubl_login.py`, `sweep_counts.py`), `refresh_measured.py`, `env_check.py` (presence and length only), `sanitize_check.py`.
 - `tests/`: unit tests.
-- `docs/`: `measured.md` (generated), `comparison.md` (template), `risks.md`.
+- `docs/`: `measured.md` (generated), `failure-demo.md` (the scenario and how it is shown), `comparison.md` (template), `risks.md`.
 
 ## Quick start
 
@@ -56,7 +56,7 @@ python3 -m venv .venv && .venv/bin/pip install playwright && .venv/bin/playwrigh
 
 ### n8n (optional, local)
 
-`run-n8n.sh` starts n8n 2.x (Node 24) bound to `127.0.0.1` with telemetry, update checks and templates off. Import `workflows/measured-report.json`, set the paths, and the workflow runs the report every four hours and saves a report or an alert. No account and no cloud service is used.
+`run-n8n.sh` starts n8n 2.x (Node 24) bound to `127.0.0.1` with telemetry, update checks and templates off. Import `workflows/measured-report.json` and set the paths. It runs the report and the logged-out streak check every four hours and saves a report or an alert file. `workflows/ubl-login.json` is a manual-trigger workflow that runs the gated logged-in cycle; it needs a person for the second factor, so it is not scheduled. No account and no cloud service is used.
 
 ### Live login (off by default)
 
@@ -68,6 +68,10 @@ python3 -m venv .venv && .venv/bin/pip install playwright && .venv/bin/playwrigh
 - No retry loops, one alert per episode, a bounded wait for the second factor.
 - Credentials are never stored, logged, returned or put in error text. `scripts/sanitize_check.py` and a pre-push hook scan the tree for secrets, emails and course codes, including the live credential values if they are in the environment.
 - Page contents are never recorded: diagnostics hold the host, path and element counts; portal counters keep SHA-256 hashes of link targets or labels.
+
+## Results so far
+
+See `docs/measured.md`, generated from real runs, with n beside every figure. Two full logged-in cycles on the real portal and mailbox each took about 23 seconds and needed one second-factor push; the second cycle found new inbox rows by hash comparison, so the seen-set diff works. Whether "remember this device" can remove the push is unconfirmed: it did not remove it in either cycle.
 
 ## Limits
 

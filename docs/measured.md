@@ -12,6 +12,10 @@ Session-expiry episodes: 8 (cycles each: [2, 11, 5, 4, 3, 4, 1, 1]); still open:
 
 Replayed on the measured history (51 cycles with exact timestamps; 5 rows with approximate times left out): 29 failed cycles would have produced 6 alert(s) and 9 attempt(s) skipped by backoff.
 
+## This repo's own logged-in cycles
+
+n cycles: 2 (2 ok). Duration p50 22.5 s, max 23 s. Duo pushes: 2 in total (1.0 per cycle). Items seen per cycle: 5 courses, 13 to-do items, 7 inbox rows. New inbox rows found since the previous cycle: 2 in total.
+
 ## What this does not show
 
 - Blind-cycle durations are the time to reach the login page, not the time of a real pass. Pass durations come only from runs that got past login.

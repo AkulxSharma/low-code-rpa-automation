@@ -1,5 +1,5 @@
 {
-  "name": "UB Learns login (gated, one attempt per expiry episode)",
+  "name": "UB Learns + Outlook counts (gated, Duo by a person)",
   "active": false,
   "nodes": [
     {
@@ -35,10 +35,10 @@
     },
     {
       "parameters": {
-        "command": "cd \"/path/to/low-code-rpa-automation\" && .venv/bin/python scripts/ubl_login.py"
+        "command": "cd \"/path/to/low-code-rpa-automation\" && UBL_HEADED=1 .venv/bin/python scripts/sweep_counts.py"
       },
       "id": "l2",
-      "name": "Run login flow",
+      "name": "Run logged-in cycle",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
@@ -85,7 +85,7 @@
       "main": [
         [
           {
-            "node": "Run login flow",
+            "node": "Run logged-in cycle",
             "type": "main",
             "index": 0
           }
@@ -96,14 +96,14 @@
       "main": [
         [
           {
-            "node": "Run login flow",
+            "node": "Run logged-in cycle",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run login flow": {
+    "Run logged-in cycle": {
       "main": [
         [
           {

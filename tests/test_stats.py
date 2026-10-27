@@ -77,6 +77,20 @@ class StatsTests(unittest.TestCase):
         self.assertEqual(s["episodes_still_open"], 1)
         self.assertEqual(s["pass_n_with_duration"], 0)
 
+    def test_cycle_section_counts_only(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as handle:
+            handle.write("ts_edt,duration_s,status,courses,worktodo_items,worktodo_new,inbox_rows,inbox_new,duo_pushes\n"
+                         "2030-01-01T01:00,20,ok_logged_in,5,10,0,7,0,1\n2030-01-01T05:00,30,ok_logged_in,5,10,0,7,2,1\n")
+        try:
+            text = stats.cycle_section(handle.name)
+        finally:
+            os.unlink(handle.name)
+        self.assertIn("n cycles: 2 (2 ok)", text)
+        self.assertIn("p50 25.0 s", text)
+        self.assertIn("Duo pushes: 2 in total", text)
+        self.assertIn("2 in total.", text)
+        self.assertEqual(stats.cycle_section("/nonexistent/none.csv"), "")
+
 
 if __name__ == "__main__":
     unittest.main()

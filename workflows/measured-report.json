@@ -139,6 +139,19 @@
         0,
         -160
       ]
+    },
+    {
+      "parameters": {
+        "command": "cd \"/path/to/low-code-rpa-automation\" && python3 -m reader.blind_alert \"/path/to/sweep-stats.csv\""
+      },
+      "id": "blind-alert-node",
+      "name": "Check logged-out streak",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        260,
+        300
+      ]
     }
   ],
   "connections": {
@@ -147,6 +160,11 @@
         [
           {
             "node": "Run stats reader",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check logged-out streak",
             "type": "main",
             "index": 0
           }
@@ -209,6 +227,11 @@
         [
           {
             "node": "Run stats reader",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check logged-out streak",
             "type": "main",
             "index": 0
           }

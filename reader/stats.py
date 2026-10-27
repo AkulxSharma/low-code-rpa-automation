@@ -116,6 +116,27 @@ def _period(summary):
     return first if first == last else "{} to {}".format(first, last)
 
 
+def cycle_section(path):
+    """Summary of this repo's own logged-in cycles (data/rpa-cycles.csv). Counts and timings only; empty string if absent."""
+    try:
+        with open(path, newline="") as handle:
+            rows = list(csv.DictReader(handle))
+    except OSError:
+        return ""
+    if not rows:
+        return ""
+    durations = [int(r["duration_s"]) for r in rows if (r.get("duration_s") or "").strip()]
+    ok = [r for r in rows if r["status"] == "ok_logged_in"]
+    return ("## This repo's own logged-in cycles\n\n"
+            "n cycles: {n} ({ok} ok). Duration p50 {p50} s, max {mx} s. Duo pushes: {duo} in total ({per:.1f} per cycle). "
+            "Items seen per cycle: {courses} courses, {todo} to-do items, {inbox} inbox rows. "
+            "New inbox rows found since the previous cycle: {new} in total.\n").format(
+        n=len(rows), ok=len(ok), p50=statistics.median(durations) if durations else "n/a", mx=max(durations) if durations else "n/a",
+        duo=sum(int(r.get("duo_pushes") or 0) for r in rows), per=sum(int(r.get("duo_pushes") or 0) for r in rows) / len(rows),
+        courses=rows[-1]["courses"], todo=rows[-1]["worktodo_items"], inbox=rows[-1]["inbox_rows"],
+        new=sum(int(r.get("inbox_new") or 0) for r in rows))
+
+
 def render(summary):
     lines = [
         "# Measured from the live sweep",

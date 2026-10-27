@@ -4,7 +4,7 @@ Nothing in this file is a result. It is the structure that gets filled in.
 
 ## Automated cycle (measured from the live sweep)
 
-To be filled from the statistics file: n runs, date range, p50 and p90 duration. Source: the per-cycle statistics file, counts and timings only.
+See `measured.md` for the current figures (n runs, p50 and p90 duration). Source: the per-cycle statistics file, counts and timings only.
 
 ## Manual baseline
 

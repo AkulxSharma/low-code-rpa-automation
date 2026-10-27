@@ -30,8 +30,10 @@ def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
     body = report.build(sys.argv[1]).split("\n", 2)[2]  # drop the report's own title line
+    from reader import stats
+    own = stats.cycle_section(os.path.join(ROOT, "data", "rpa-cycles.csv"))
     with open(os.path.join(ROOT, "docs", "measured.md"), "w") as handle:
-        handle.write(HEADER + body + FOOTER)
+        handle.write(HEADER + body + ("\n" + own if own else "") + FOOTER)
 
 
 if __name__ == "__main__":
