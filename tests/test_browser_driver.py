@@ -66,6 +66,12 @@ class BrowserDriverTests(unittest.TestCase):
             self.driver.submit_credentials("u", "p")
         self.assertEqual(self.sso.login_posts, 0)
 
+    def test_submit_selector_skips_a_hidden_button_that_comes_first(self):
+        from reader.browser_driver import VISIBLE_SUBMIT
+        page = self.driver.page
+        page.set_content('<form><button type=submit style="display:none" id=hidden>Resend</button><button type=submit id=real>Log in</button></form>')
+        self.assertEqual(page.locator(VISIBLE_SUBMIT).first.get_attribute("id"), "real")
+
 
 if __name__ == "__main__":
     unittest.main()

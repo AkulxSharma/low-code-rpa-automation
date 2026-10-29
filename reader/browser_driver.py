@@ -15,6 +15,8 @@ from reader.login_flow import DUO_CHALLENGE, DUO_TRUST, LOGGED_IN, LOGIN_FORM
 USER_SELECTORS = "input[name=username], input#username, input[name=u], input[type=email], input[type=text]"
 SUBMIT_SELECTORS = ("button[type=submit], input[type=submit], button:has-text('Log in'), button:has-text('Login'), "
                     "button:has-text('Sign in'), button:has-text('Submit'), button:has-text('Continue'), [role=button]:has-text('Log in')")
+# ":visible" binds to one selector, not the whole comma list, so it has to follow every alternative.
+VISIBLE_SUBMIT = ", ".join(s.strip() + ":visible" for s in SUBMIT_SELECTORS.split(","))
 DUO_HINTS = ("duo push", "duo mobile", "check for a duo", "approve the login", "verify it's you")
 TRUST_HINTS = ("is this your device", "trust this browser", "yes, this is my device", "remember this device")
 
@@ -101,7 +103,7 @@ class BrowserDriver:
         scope = form.first if form.count() else self.page
         scope.locator(USER_SELECTORS).first.fill(user)  # username box in the same form as the password box
         field.fill(password)
-        buttons = self.page.locator(SUBMIT_SELECTORS + ":visible")
+        buttons = self.page.locator(VISIBLE_SUBMIT)
         if buttons.count():
             buttons.first.click(timeout=5000)
         else:
