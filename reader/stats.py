@@ -18,7 +18,10 @@ ITEM_COLUMNS = ("new_announcements", "new_grades", "new_due_dates", "new_emails"
 
 def _int(value):
     value = (value or "").strip()
-    return int(value) if value else None
+    try:
+        return int(value) if value else None
+    except ValueError:  # "n/a", "12s" and the like: treat as missing rather than failing the whole file
+        return None
 
 
 def _ts(value):

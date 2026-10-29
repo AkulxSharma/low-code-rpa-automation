@@ -46,6 +46,12 @@ def message(result):
             "Log in to UB Learns and text 'in' so the real sweep can resume.").format(result["cycles"], result["since"])
 
 
+def _write(path, text):
+    os.makedirs(os.path.dirname(path), exist_ok=True)  # state/ and data/ are gitignored, so absent in a fresh clone
+    with open(path, "w") as handle:
+        handle.write(text)
+
+
 def run(csv_path, state_path, alert_path, threshold=DEFAULT_THRESHOLD):
     """Evaluate, write the alert file and update state when due. Returns the check result."""
     try:
@@ -55,13 +61,10 @@ def run(csv_path, state_path, alert_path, threshold=DEFAULT_THRESHOLD):
         last = None
     result = check(stats.load(csv_path), last, threshold)
     if result["alert"]:
-        with open(alert_path, "w") as handle:
-            handle.write(message(result) + "\n")
-        with open(state_path, "w") as handle:
-            json.dump({"last_alerted_key": result["key"]}, handle)
+        _write(alert_path, message(result) + "\n")
+        _write(state_path, json.dumps({"last_alerted_key": result["key"]}))
     elif result["cycles"] == 0 and last is not None:
-        with open(state_path, "w") as handle:  # recovered: the next episode may alert again
-            json.dump({"last_alerted_key": None}, handle)
+        _write(state_path, json.dumps({"last_alerted_key": None}))  # recovered: the next episode may alert again
     return result
 
 

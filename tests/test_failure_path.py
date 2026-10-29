@@ -74,6 +74,23 @@ class FailurePathTests(unittest.TestCase):
         self.assertEqual(out, {"result": fp.TRANSIENT_FAILED, "alert": False})
         self.assertEqual(self.portal.hits - before, 1 + fp.MAX_TRANSIENT_RETRIES)
 
+    def test_classify_error_pages_are_not_session_expiry(self):
+        self.assertEqual(fp.classify(401, None, '{"error": "Unauthorized"}'), fp.EXPIRED)
+        self.assertEqual(fp.classify(200, None, "<html>Please sign in</html>"), fp.EXPIRED)
+        for status in (404, 429):
+            with self.subTest(status=status):
+                self.assertEqual(fp.classify(status, None, "<html>error page</html>"), "transient")
+
+    def test_network_error_is_transient_and_retried_without_alert(self):
+        calls = []
+
+        def down():
+            calls.append(1)
+            raise ConnectionRefusedError("portal down")
+        out = fp.Guard().run(down, 0)
+        self.assertEqual(out, {"result": fp.TRANSIENT_FAILED, "alert": False})
+        self.assertEqual(len(calls), 1 + fp.MAX_TRANSIENT_RETRIES)
+
 
 if __name__ == "__main__":
     unittest.main()

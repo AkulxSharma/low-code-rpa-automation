@@ -73,6 +73,18 @@ class BlindAlertTests(unittest.TestCase):
             write(["auth_expired"] * 3 + ["ok"] + ["auth_expired"] * 3)
             self.assertTrue(blind_alert.run(csv_path, state, alert)["alert"])
 
+    def test_run_creates_missing_state_and_data_folders(self):
+        with tempfile.TemporaryDirectory() as tmp:  # a fresh clone has neither state/ nor data/ (both gitignored)
+            csv_path = os.path.join(tmp, "s.csv")
+            with open(csv_path, "w") as handle:
+                handle.write(stats_header() + "".join(csv_line(i, "auth_expired") for i in range(3)))
+            alert_path = os.path.join(tmp, "data", "alert.txt")
+            state_path = os.path.join(tmp, "state", "b.json")
+            self.assertTrue(blind_alert.run(csv_path, state_path, alert_path)["alert"])
+            self.assertTrue(os.path.exists(alert_path))
+            with open(state_path) as handle:
+                self.assertIsNotNone(json.load(handle)["last_alerted_key"])
+
 
 def stats_header():
     from tests.test_stats import HEADER
