@@ -12,9 +12,11 @@ from reader import stats
 
 
 def replay(rows):
-    exact = [r for r in rows if r["ts"] and not r["ts_approx"]]
+    # Inconclusive probes are neutral (as in stats.episodes and blind_alert): they neither end nor extend an episode.
+    exact = [r for r in rows if r["ts"] and not r["ts_approx"] and r["status"] not in stats.NEUTRAL]
+    excluded = sum(1 for r in rows if not r["ts"] or r["ts_approx"])
     if not exact:
-        return {"replayed_cycles": 0, "excluded_approx_rows": len(rows)}
+        return {"replayed_cycles": 0, "excluded_approx_rows": excluded}
     origin = exact[0]["ts"]
     guard = fp.Guard()
     failed = alerts = skipped = 0
@@ -30,7 +32,7 @@ def replay(rows):
         skipped += out["result"] == fp.SKIPPED_BACKOFF
     return {
         "replayed_cycles": len(exact),
-        "excluded_approx_rows": len(rows) - len(exact),
+        "excluded_approx_rows": excluded,
         "failed_cycles": failed,
         "alerts": alerts,
         "attempts_skipped_by_backoff": skipped,

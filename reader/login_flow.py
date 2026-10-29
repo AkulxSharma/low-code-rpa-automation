@@ -80,8 +80,13 @@ class LoginFlow:
             self._alert_once(state, "UB login page not recognised; no attempt made, please look.")
             return "unknown_page"
         state["attempted"] = True
-        self.store.save(state)  # persisted before submitting
-        user, password = self.get_credentials()  # sanitize-ok: value comes from the injected callable
+        self.store.save(state)  # persisted before the credentials are read or submitted
+        try:
+            user, password = self.get_credentials()  # sanitize-ok: value comes from the injected callable
+        except Exception:
+            state["attempted"] = False  # nothing was submitted (e.g. UBL_USER unset), so the episode's one attempt is still unused
+            self.store.save(state)
+            raise
         self.driver.submit_credentials(user, password)
         del user, password
         page = self.driver.page_state()

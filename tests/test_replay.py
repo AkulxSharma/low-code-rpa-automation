@@ -34,6 +34,13 @@ class ReplayTests(unittest.TestCase):
         rows = [row(0, "auth_expired", approx=True)]
         self.assertEqual(replay.replay(rows)["replayed_cycles"], 0)
 
+    def test_inconclusive_probe_does_not_end_an_episode(self):
+        rows = [row(0, "auth_expired"), row(1, "probe_inconclusive"), row(2, "auth_expired")]
+        r = replay.replay(rows)
+        self.assertEqual(r["alerts"], 1)  # one episode, as stats.episodes and blind_alert count it
+        self.assertEqual(r["replayed_cycles"], 2)
+        self.assertEqual(r["excluded_approx_rows"], 0)  # a neutral row is not an approximate-time row
+
 
 if __name__ == "__main__":
     unittest.main()

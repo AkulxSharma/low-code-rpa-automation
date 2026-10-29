@@ -11,6 +11,8 @@ import re
 import subprocess
 import sys
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 RULES = {
     "course-code": re.compile(r"\b(ECO|AI|PSC|MTH|CSE|EAS)[ -]?\d{3}\b"),
     "email-address": re.compile(r"[\w.+-]+@[\w-]+\.[A-Za-z]{2,}\b"),
@@ -31,7 +33,8 @@ def env_value_rules():
 
 
 def tracked_files():
-    out = subprocess.run(["git", "ls-files"], capture_output=True, text=True, check=True).stdout
+    # From the repo root whatever the caller's directory: `git ls-files` only lists the current folder's files otherwise.
+    out = subprocess.run(["git", "ls-files"], capture_output=True, text=True, check=True, cwd=ROOT).stdout
     return [f for f in out.splitlines() if f.endswith((".py", ".md", ".json", ".sh", ".csv", ".txt", ".gitignore"))]
 
 
@@ -40,7 +43,7 @@ def main():
     findings = []
     rules = dict(RULES, **env_value_rules())
     for path in tracked_files():
-        with open(path, errors="replace") as handle:
+        with open(os.path.join(ROOT, path), errors="replace") as handle:
             for number, line in enumerate(handle, 1):
                 if any(s in line for s in secrets):
                     findings.append((path, number, "live-credential-value"))

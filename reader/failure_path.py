@@ -39,12 +39,16 @@ def classify(status, location, body):
     """OK, EXPIRED (auth signal) or 'transient' (anything else that failed)."""
     if status in (301, 302, 303, 307, 308) and location and "login" in location.lower():
         return EXPIRED
+    if status == 401:
+        return EXPIRED
     if status >= 500:
         return "transient"
     try:
         parsed = json.loads(body)
     except ValueError:
-        return EXPIRED  # non-JSON where JSON was expected
+        # HTML where JSON was expected is a login page only when the request itself succeeded;
+        # a 404 or 429 error page says nothing about the session.
+        return EXPIRED if 200 <= status < 300 else "transient"
     if isinstance(parsed, dict) and str(parsed.get("error", "")).startswith("Authentication"):
         return EXPIRED
     return OK if 200 <= status < 300 else "transient"
@@ -66,7 +70,10 @@ class Guard:
             return {"result": SKIPPED_BACKOFF, "alert": False}
         verdict = "transient"
         for _ in range(1 + MAX_TRANSIENT_RETRIES):
-            verdict = classify(*fetch())
+            try:
+                verdict = classify(*fetch())
+            except OSError:  # URLError, timeouts and refused connections: a network blip is transient, not a crash
+                verdict = "transient"
             if verdict != "transient":
                 break
         if verdict == OK:

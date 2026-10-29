@@ -71,6 +71,14 @@ class LoginFlowTests(unittest.TestCase):
         self.assertEqual(self.flow().run(), "already_logged_in")
         self.assertEqual(self.sso.login_posts, 0)
 
+    def test_missing_credentials_do_not_use_up_the_attempt(self):
+        def missing():
+            raise KeyError("UBL_USER")
+        with self.assertRaises(KeyError):
+            LoginFlow(self.driver, self.store, self.alerts.append, missing, lambda s: None).run()
+        self.assertFalse(self.store.load()["attempted"])  # nothing was submitted, so the episode's attempt is still available
+        self.assertEqual(self.sso.login_posts, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

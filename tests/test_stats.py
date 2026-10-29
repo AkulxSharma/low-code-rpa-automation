@@ -91,6 +91,11 @@ class StatsTests(unittest.TestCase):
         self.assertIn("2 in total.", text)
         self.assertEqual(stats.cycle_section("/nonexistent/none.csv"), "")
 
+    def test_non_integer_cell_is_treated_as_missing(self):
+        rows = rows_from("2030-01-01T01:00,no,n/a,no,ok,x,0,0,0,0,none,,y\n")
+        self.assertIsNone(rows[0]["duration_s"])
+        self.assertIsNone(rows[0]["items"]["new_announcements"])
+
 
 if __name__ == "__main__":
     unittest.main()
